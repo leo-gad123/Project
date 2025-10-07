@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>⚡ Ion Alarm Scheduler</title>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #ff7eb3, #65d6ce, #ffdd94);
+      color: white;
+      text-align: center;
+      height: 100vh;
+      margin: 0;
+      overflow: hidden;
+    }
+    h1 {
+      font-size: 2.2rem;
+      margin-top: 20px;
+    }
+    #controls { margin-top: 30px; }
+    input, button {
+      font-size: 1rem;
+      padding: 10px;
+      border-radius: 10px;
+      border: none;
+      margin: 5px;
+    }
+    button {
+      background: linear-gradient(45deg, #00c6ff, #0072ff);
+      color: white;
+      cursor: pointer;
+    }
+    ul {
+      list-style: none;
+      padding: 0;
+      margin-top: 25px;
+    }
+    li {
+      background: rgba(0, 0, 0, 0.3);
+      margin: 8px;
+      padding: 10px;
+      border-radius: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .deleteBtn, .stateBtn {
+      border: none;
+      border-radius: 8px;
+      padding: 5px 10px;
+      cursor: pointer;
+      color: white;
+    }
+    .deleteBtn { background: #ff4b2b; }
+    .stateBtn { background: #ffcc00; color: black; }
+  </style>
+</head>
+<body>
+  <h1>⚡ Ion Alarm Scheduler</h1>
+  <button onclick="logout()">🚪 Logout</button>
+  
+  <div id="controls">
+    <input type="number" id="hours" min="0" max="23" placeholder="HH">
+    <input type="number" id="minutes" min="0" max="59" placeholder="MM">
+    <input type="number" id="seconds" min="0" max="59" placeholder="SS">
+    <button onclick="addAlarm()">➕ Add Alarm</button>
+  </div>
+
+  <ul id="alarmList"></ul>
+
+  <script>
+    var firebaseConfig = {
+      apiKey: "wyXceByxjUTKEWKlLXrOm64YT2SpmG5OZujyTf8l",
+      authDomain: "test-3e174.firebaseapp.com",
+      databaseURL: "https://test-3e174-default-rtdb.firebaseio.com/",
+      projectId: "test-3e174",
+      storageBucket: "test-3e174.appspot.com",
+    };
+    firebase.initializeApp(firebaseConfig);
+    var db = firebase.database();
+
+    firebase.auth().onAuthStateChanged(user => {
+      if (!user) window.location = "index.html";
+    });
+
+    function logout() {
+      firebase.auth().signOut().then(() => window.location = "index.html");
+    }
+
+    function addAlarm() {
+      let hh = document.getElementById("hours").value.padStart(2,'0');
+      let mm = document.getElementById("minutes").value.padStart(2,'0');
+      let ss = document.getElementById("seconds").value.padStart(2,'0');
+      if(hh && mm && ss){
+        let time = `${hh}:${mm}:${ss}`;
+        let newRef = db.ref("alarms").push();
+        newRef.set({ time: time });
+        db.ref("state/" + newRef.key).set(0);
+      } else {
+        alert("Enter valid HH, MM, SS!");
+      }
+    }
+
+    function deleteAlarm(id) {
+      db.ref("alarms/" + id).remove();
+      db.ref("state/" + id).remove();
+    }
+
+    function resetState(id) {
+      db.ref("state/" + id).set(0);
+    }
+
+    db.ref("alarms").on("value", snapshot => {
+      let list = document.getElementById("alarmList");
+      list.innerHTML = "";
+      snapshot.forEach(child => {
+        const alarm = child.val();
+        const id = child.key;
+        db.ref("state/" + id).once("value").then(snap => {
+          let state = snap.val();
+          let li = document.createElement("li");
+          li.innerHTML = `
+            ⏰ ${alarm.time} | State: ${state == 0 ? "Active" : "Triggered"}
+            <button class="deleteBtn" onclick="deleteAlarm('${id}')">❌ Delete</button>
+            <button class="stateBtn" onclick="resetState('${id}')">🔄 Reset</button>`;
+          list.appendChild(li);
+        });
+      });
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Ion Alarm Login</title>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #65d6ce, #ff7eb3, #ffdd94);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      color: white;
+    }
+    .login-box {
+      background: rgba(0, 0, 0, 0.4);
+      padding: 40px;
+      border-radius: 15px;
+      box-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
+      text-align: center;
+    }
+    input {
+      display: block;
+      margin: 10px auto;
+      padding: 10px;
+      border-radius: 10px;
+      border: none;
+      width: 80%;
+      font-size: 1rem;
+    }
+    button {
+      background: linear-gradient(45deg, #00c6ff, #0072ff);
+      border: none;
+      padding: 10px 20px;
+      border-radius: 10px;
+      color: white;
+      cursor: pointer;
+      margin-top: 10px;
+      font-size: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="login-box">
+    <h2>🔐 Ion Alarm Login</h2>
+    <input type="email" id="email" placeholder="Email" value="hakizimanaleogad@gmail.com">
+    <input type="password" id="password" placeholder="Password" value="leogad@123">
+    <button onclick="login()">Login</button>
+    <p id="msg"></p>
+  </div>
+
+  <script>
+    var firebaseConfig = {
+      apiKey: "YOUR_API_KEY_HERE",
+      authDomain: "test-3e174.firebaseapp.com",
+      projectId: "test-3e174",
+    };
+    firebase.initializeApp(firebaseConfig);
+
+    function login() {
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+      const msg = document.getElementById("msg");
+
+      firebase.auth().signInWithEmailAndPassword(email, password)
+        .then(() => {
+          msg.textContent = "✅ Login successful! Redirecting...";
+          setTimeout(() => window.location = "alarm.html", 1500);
+        })
+        .catch(error => {
+          msg.textContent = "❌ " + error.message;
+        });
+    }
+  </script>
+</body>
+</html>
